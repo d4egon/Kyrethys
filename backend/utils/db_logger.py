@@ -57,7 +57,7 @@ def extract_face_mesh(image_path):
 
 def log_interaction(user_message: str, assistant_response: str, emotion_state: dict):
     # 1. Fang snapshot
-    snapshot_filename = marvix_eyes.capture_snapshot()
+    snapshot_filename = marvix_eyes.take_snapshot()
     
     # 2. Udtræk koordinater
     coords_json = None

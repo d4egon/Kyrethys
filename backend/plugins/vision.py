@@ -1,6 +1,7 @@
 import cv2
 import os
 import datetime
+import threading # Tilføjet for at sikre trådsikkerhed
 
 class MarvixVision:
     def __init__(self):
@@ -8,31 +9,44 @@ class MarvixVision:
         self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
         self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
         self.snapshot_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'snapshots')
+        
+        # Gem den sidste frame her for at undgå hardware-konflikt
+        self.last_frame = None
+        self.lock = threading.Lock() # Sikrer at vi ikke læser/skriver samtidigt
+
         if not os.path.exists(self.snapshot_path):
             os.makedirs(self.snapshot_path)
 
-    def capture_snapshot(self):
-        success, frame = self.camera.read()
-        if success:
-            # FLIP: -1 flipper både horisontalt og vertikalt (180 grader)
-            frame = cv2.flip(frame, -1)
-            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"snap_{timestamp}.jpg"
-            full_path = os.path.join(self.snapshot_path, filename)
-            cv2.imwrite(full_path, frame)
-            return filename 
+    def take_snapshot(self): # Omdøbt fra capture_snapshot så det matcher dit kald i backend
+        with self.lock:
+            if self.last_frame is not None:
+                timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                filename = f"snap_{timestamp}.jpg"
+                full_path = os.path.join(self.snapshot_path, filename)
+                cv2.imwrite(full_path, self.last_frame)
+                print(f"DEBUG: Snapshot gemt: {filename}")
+                return filename 
         return None
 
-    def generate_frames(self): # Omdøbt fra get_frames for at matche din backend route
+    def generate_frames(self):
         while True:
             success, frame = self.camera.read()
-            if not success: break
+            if not success: 
+                break
             
-            # FLIP: Sikrer at dit Live Feed i frontenden også vender rigtigt
+            # Vend billedet rigtigt
             frame = cv2.flip(frame, -1)
             
+            # Opdater 'last_frame' så snapshot-funktionen har noget at arbejde med
+            with self.lock:
+                self.last_frame = frame.copy()
+            
             ret, buffer = cv2.imencode('.jpg', frame)
-            yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+            if not ret:
+                continue
+
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 
     def __del__(self):
         if hasattr(self, 'camera') and self.camera.isOpened():
