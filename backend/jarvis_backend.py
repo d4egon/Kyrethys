@@ -14,10 +14,9 @@ import os
 import threading
 import time
 import subprocess
-
-from flask import Flask, request, jsonify
+from plugins.vision import MarvixVision
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
-
 import psutil
 import requests
 import sounddevice as sd
@@ -25,13 +24,14 @@ import numpy as np
 import whisper
 import scipy.io.wavfile as wav
 from textblob import TextBlob
-
-# Utils & DB
+import torch_directml
 from utils.db_logger import DB_PATH, init_db, log_interaction
 from utils.emotion import EmotionEngine
 from utils.speak import speak
 from utils.listen import listen
 from utils.launcher import launch_app
+
+marvix_eyes = MarvixVision()
 
 # INITIALIZATION
 app = Flask(__name__)
@@ -39,6 +39,7 @@ CORS(app)
 
 # Initialize DB once at startup
 init_db()
+
 
 
 
@@ -120,7 +121,7 @@ Marvix:
         res = requests.post(
             OLLAMA_URL,
             json={"model": OLLAMA_MODEL, "prompt": prompt, "stream": False},
-            timeout=90
+            timeout=540
         )
         res.raise_for_status()
         return res.json().get('response', '').strip()
@@ -193,22 +194,27 @@ def chat():
         'emotion': emotion_state
     })
 
-# ────────────────────────────────────────────────
-# LISTEN ROUTE
-# ────────────────────────────────────────────────
 @app.route('/api/listen', methods=['POST'])
 def listen_route():
+    # 1. Capture snapshot med det samme (før lyden starter)
+    # Vi trigger en gem-funktion i din kamera-logik
+    try:
+        # Erstat 'camera' med din faktiske variabel for VideoCapture/Vision 
+        marvix_eyes.take_snapshot() 
+        print("DEBUG: Genuine snapshot taget ved starten af optagelse.")
+    except Exception as e:
+        print(f"Snapshot fejl: {e}")
+
+    # Start optagelsen og transskribér
     transcribed = listen()
+    
     if transcribed:
         emotion_engine.update_emotion(transcribed)
         emotion_state = emotion_engine.get_state()
         reply = chat_with_ai(transcribed, emotion_state)
-        # log_interaction(transcribed, reply, emotion_state) ### moved to chat route to avoid double logging
-        # speak(reply)  ### moved to chat route to avoid double speak
         return jsonify({'text': transcribed, 'response': reply, 'emotion': emotion_state})
     else:
         reply = "I didn't hear anything – try again?"
-        #speak(reply) ### moved to chat route to avoid double speak
         return jsonify({'text': '', 'response': reply, 'emotion': emotion_engine.get_state()})
 
 # ────────────────────────────────────────────────
@@ -272,7 +278,14 @@ def launch():
     except Exception as e:
         print(f"Launch route error: {e}")
         return jsonify({'result': f"Server error: {str(e)}"}), 500
-
+    
+# ────────────────────────────────────────────────
+# VIDEO FEED ROUTE
+# ────────────────────────────────────────────────
+@app.route('/video_feed')
+def video_feed():
+    return Response(marvix_eyes.generate_frames(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
 if __name__ == '__main__':
     print("Marvix starting up...")
     # speak("All systems online. Welcome back Hans.")
