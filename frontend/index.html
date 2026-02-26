@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marvix</title>
+    <title>Kyrethys</title>
     <style>
         <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -57,7 +57,7 @@
         border: 1px solid #0056b3;
     }
 
-    .marvix-message {
+    .Kyrethys-message {
         align-self: flex-start;
         background: #161618; /* Dark grey */
         color: #00d4ff;     /* Jarvis Blue */
@@ -114,7 +114,7 @@
         gap: 20px;
     }
 
-    .marvix-vision-container {
+    .Kyrethys-vision-container {
         border: 1px solid #00d4ff;
         border-radius: 8px;
         background: #000;
@@ -130,14 +130,14 @@
 <body>
     <div class="chat-section">
         <div class="header">
-            <h1>Marvix</h1>
+            <h1>Kyrethys</h1>
             <p>"Sentient" AI Desktop Assistant</p>
         </div>
         
         <div class="chat-container" id="chat"></div>
 
         <div class="input-container">
-            <button id="cameraToggle" class="btn-camera" onclick="toggleMarvixEyes()">📷 Camera: ON</button>
+            <button id="cameraToggle" class="btn-camera" onclick="toggleKyrethysEyes()">📷 Camera: ON</button>
             <button id="mic-btn" onclick="startListening()">🎤 Voice</button>
             <input type="text" id="input" placeholder="Type here..." autofocus>
             <button id="send-btn" onclick="sendMessage()">Send</button>
@@ -145,8 +145,8 @@
     </div>
     
     <div class="sidebar">
-        <div class="marvix-vision-container">
-            <h3>MARVIX LIVE FEED</h3>
+        <div class="Kyrethys-vision-container">
+            <h3>Kyrethys LIVE FEED</h3>
             <img id="liveFeed" src="http://127.0.0.1:5000/video_feed" style="width:100%;">
         </div>
 
@@ -167,7 +167,7 @@
             <p>Uptime: <span id="uptime">--</span></p>
         </div>
 
-        <div id="marvix-status-hud" style="
+        <div id="Kyrethys-status-hud" style="
             position: fixed;
             bottom: 15px;
             right: 15px;
@@ -193,7 +193,7 @@
         function toggleDarkMode() {
             document.body.classList.toggle('dark-theme');
             const isDark = document.body.classList.contains('dark-theme');
-            localStorage.setItem('marvix-theme', isDark ? 'dark' : 'light');
+            localStorage.setItem('Kyrethys-theme', isDark ? 'dark' : 'light');
             document.getElementById('theme-toggle').innerText = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
         }
     const API_BASE = 'http://127.0.0.1:5000/api';
@@ -202,9 +202,9 @@
         function addMessage(sender, text = '') {
             const chat = document.getElementById('chat');
             const div = document.createElement('div');
-            // Using 'marvix-message' for the assistant to match your new CSS
-            div.className = sender === 'user' ? 'user-message' : 'marvix-message';
-            div.innerHTML = `<strong>${sender === 'user' ? 'You' : 'MARVIX'}:</strong> ${text}`;
+            // Using 'Kyrethys-message' for the assistant to match your new CSS
+            div.className = sender === 'user' ? 'user-message' : 'Kyrethys-message';
+            div.innerHTML = `<strong>${sender === 'user' ? 'You' : 'Kyrethys'}:</strong> ${text}`;
             chat.appendChild(div);
             chat.scrollTop = chat.scrollHeight;
             return div;
@@ -253,7 +253,7 @@
                             const data = JSON.parse(dataStr);
                             if (data.token) {
                                 if (!aiDiv) {
-                                    aiDiv = addMessage('marvix', ''); // Corrected sender name
+                                    aiDiv = addMessage('Kyrethys', ''); // Corrected sender name
                                 }
                                 aiDiv.innerHTML += data.token;
                                 fullResponseText += data.token;
@@ -267,7 +267,7 @@
             }
         } catch (err) {
             console.error("Chat error:", err);
-            addMessage('marvix', 'My circuits are slightly crossed: ' + err.message);
+            addMessage('Kyrethys', 'My circuits are slightly crossed: ' + err.message);
         }
     }
 
@@ -309,7 +309,7 @@
 
     let cameraActive = true;
 
-async function toggleMarvixEyes() {
+async function toggleKyrethysEyes() {
     const btn = document.getElementById('cameraToggle');
     cameraActive = !cameraActive;
 
@@ -325,13 +325,13 @@ async function toggleMarvixEyes() {
             btn.style.backgroundColor = cameraActive ? "#007bff" : "#dc3545";
             
             // Toggle the video feed visibility
-            const videoFeed = document.querySelector('.marvix-live-feed img');
+            const videoFeed = document.querySelector('.Kyrethys-live-feed img');
             if (videoFeed) {
                 videoFeed.style.display = cameraActive ? "block" : "none";
             }
         }
     } catch (error) {
-        console.error("Failed to toggle Marvix's eyes:", error);
+        console.error("Failed to toggle Kyrethys's eyes:", error);
     }
 }
 
@@ -364,12 +364,12 @@ async function toggleMarvixEyes() {
 
     
     // Funktion der henter status hvert sekund
-    async function updateMarvixStatus() {
+    async function updateKyrethysStatus() {
         try {
             const res = await fetch('http://127.0.0.1:5000/api/status');
             const data = await res.json();
             const statusElement = document.getElementById('status-text');
-            const hud = document.getElementById('marvix-status-hud');
+            const hud = document.getElementById('Kyrethys-status-hud');
             
             statusElement.innerText = data.status;
 
@@ -392,7 +392,7 @@ async function toggleMarvixEyes() {
         }
     }
 
-    setInterval(updateMarvixStatus, 1000); // Opdater hvert sekund
+    setInterval(updateKyrethysStatus, 1000); // Opdater hvert sekund
 
     // System stats polling
     setInterval(async () => {

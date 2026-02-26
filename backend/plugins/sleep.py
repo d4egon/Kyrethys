@@ -42,7 +42,7 @@ SLEEP_SEEDS = load_sleep_seeds()
 def fetch_random_wiki_snippet():
     """Fetch a short summary from a random Wikipedia article."""
     try:
-        headers = {'User-Agent': 'MarvixAI/1.0 (contact: din-email@eksempel.com)'}
+        headers = {'User-Agent': 'KyrethysAI/1.0 (contact: din-email@eksempel.com)'}
         r = requests.get("https://en.wikipedia.org/api/rest_v1/page/random/summary", headers=headers, timeout=5)
         r.raise_for_status()
         data = r.json()
@@ -57,7 +57,7 @@ def fetch_random_wiki_snippet():
 
 def sleep_cycle():
     """Run one full sleep cycle: prune → consolidate → inject seeds."""
-    logger.info("Marvix entering sleep cycle — pruning & consolidating...")
+    logger.info("Kyrethys entering sleep cycle — pruning & consolidating...")
     collection = client.get_collection(COLLECTION_NAME)
 
     # 1. FIX: Brug .timestamp() i stedet for .isoformat() så det matcher databasens Floats
@@ -119,5 +119,5 @@ def sleep_cycle():
         metadatas=[{"type": "wiki_seed", "timestamp": current_ts}]
     )
     
-    logger.info("Sleep cycle complete. Marvix waking clearer.")
+    logger.info("Sleep cycle complete. Kyrethys waking clearer.")
     return pruned, consolidated

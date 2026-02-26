@@ -31,11 +31,11 @@ def speak(text):
     async def _speak_async(voice):
         try:
             communicate = edge_tts.Communicate(text, voice)
-            await communicate.save("marvix_temp.mp3")
+            await communicate.save("Kyrethys_temp.mp3")
 
             # Silent playback with pygame
             mixer.init()
-            mixer.music.load("marvix_temp.mp3")
+            mixer.music.load("Kyrethys_temp.mp3")
             mixer.music.play()
             while mixer.music.get_busy():
                 time.sleep(0.1)
@@ -59,8 +59,8 @@ def speak(text):
 
    # Cleanup
    # time.sleep(1)
-   # if os.path.exists("marvix_temp.mp3"):
+   # if os.path.exists("Kyrethys_temp.mp3"):
    #     try:
-   #         os.remove("marvix_temp.mp3")
+   #         os.remove("Kyrethys_temp.mp3")
    #     except:
    #         pass 

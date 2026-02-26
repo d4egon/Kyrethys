@@ -11,7 +11,7 @@ import torch_directml
 # ────────────────────────────────────────────────
 # Vi finder dit AMD-grafikkort via DirectML
 device = torch_directml.device()
-print(f"--- Marvix GPU Status: Bruger {torch_directml.device_name(0)} ---")
+print(f"--- Kyrethys GPU Status: Bruger {torch_directml.device_name(0)} ---")
 
 # Loader modellen (Whisper kører bedst på 'base' for hastighed)
 # Bemærk: Standard Whisper bruger Torch i baggrunden, som nu er linket til DirectML
@@ -30,7 +30,7 @@ def listen():
     recording = []
     has_started_talking = False
 
-    print("Marvix is listening (2.6s silence threshold)...")
+    print("Kyrethys is listening (2.6s silence threshold)...")
     
     with sd.InputStream(samplerate=fs, channels=1) as stream:
         while True:

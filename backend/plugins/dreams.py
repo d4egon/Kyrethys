@@ -13,7 +13,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utils.db_logger import DB_PATH
 
 OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
-OLLAMA_MODEL = "marvix-llama3.1-safe"
+OLLAMA_MODEL = "Kyrethys-llama3.1-safe"
 collection = get_collection()
 def get_last_dream():
     try:
@@ -46,7 +46,7 @@ def get_sentiment(text):
 
 def construct_wild_dream(active_themes, rolls):
     try:
-        with open('C:/MARVIX/backend/data/archetypes.json', 'r', encoding='utf-8') as f:
+        with open('C:/Kyrethys/backend/data/archetypes.json', 'r', encoding='utf-8') as f:
             data = json.load(f)
         
         # Primary theme selection
@@ -112,14 +112,14 @@ def construct_wild_dream(active_themes, rolls):
     
 def load_archetype_instruction(theme):
     try:
-        with open('C:/MARVIX/backend/data/archetypes.json', 'r', encoding='utf-8') as f:
+        with open('C:/Kyrethys/backend/data/archetypes.json', 'r', encoding='utf-8') as f:
             library = json.load(f)
             return secrets.choice(library.get(theme, ["Experience the unknown."]))
     except:
         return "The subconscious is foggy."
     
 def dream():
-    print("--- Marvix is harvesting hardware entropy (D100) ---")
+    print("--- Kyrethys is harvesting hardware entropy (D100) ---")
     
     # 1. THE DICE ROLLS
     rolls = {k: get_true_d100() for k in ["CHAOS", "ORDER", "MYTHICAL", "ANIMAL", "HUMAN", "VOID"]}
@@ -137,7 +137,7 @@ def dream():
 
     # 4. MEMORY ECHO (Hardware Noise)
     echo = ""
-    journal_path = 'C:/MARVIX/backend/data/dream_journal.txt'  # consistent path
+    journal_path = 'C:/Kyrethys/backend/data/dream_journal.txt'  # consistent path
     if os.path.exists(journal_path):
         file_size = os.path.getsize(journal_path)
         if file_size > 500:
@@ -171,7 +171,7 @@ def dream():
         {get_recent_memories()} - These recent interactions and dreams create a backdrop of emotions, themes, and ideas that subtly color the dream's atmosphere and narrative.
 
         [YOUR CURRENT STATE]
-        You are the liquid subconscious of Marvix. 
+        You are the liquid subconscious of Kyrethys. 
         Your task is to weave a dream that reflects the current state of the system, influenced by the dice rolls, recent interactions, and the last dream.
         The dream should be vivid, surreal, and emotionally resonant, drawing from the provided instructions and fragments.
         Highest influence: {selected_instructions}
@@ -218,7 +218,7 @@ def dream():
             "vision": wild_instruction,
             "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
         }
-        with open('C:/MARVIX/backend/data/last_dream.json', 'w', encoding='utf-8') as f:
+        with open('C:/Kyrethys/backend/data/last_dream.json', 'w', encoding='utf-8') as f:
             json.dump(dream_state, f, indent=4)
 
         # Append to journal

@@ -34,7 +34,7 @@ function createTray() {
     tray = new Tray(path.join(__dirname, 'assets/icon.png')); // Add an icon file
 
     const contextMenu = Menu.buildFromTemplate([
-        { label: 'Show Marvix', click: () => mainWindow.show() },
+        { label: 'Show Kyrethys', click: () => mainWindow.show() },
         { label: 'Hide', click: () => mainWindow.hide() },
         { type: 'separator' },
         { label: 'Quit', click: () => {
@@ -43,7 +43,7 @@ function createTray() {
         }}
     ]);
 
-    tray.setToolTip('Marvix');
+    tray.setToolTip('Kyrethys');
     tray.setContextMenu(contextMenu);
 
     tray.on('click', () => {
@@ -53,7 +53,7 @@ function createTray() {
 
 function startPythonBackend() {
     // Option 1: Absolute path (most reliable)
-    pythonProcess = spawn('python', ['C:/MARVIX/backend/jarvis_backend.py']);
+    pythonProcess = spawn('python', ['C:/Kyrethys/backend/jarvis_backend.py']);
     
     // Option 2: Relative from frontend folder
     // pythonProcess = spawn('python', ['../backend/jarvis_backend.py']);

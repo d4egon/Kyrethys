@@ -3,7 +3,7 @@ import os
 import datetime
 import threading # Tilføjet for at sikre trådsikkerhed
 
-class MarvixVision:
+class KyrethysVision:
     def __init__(self):
         self.camera_on = True # Default state
         self.cap = None
@@ -27,11 +27,11 @@ class MarvixVision:
         if not state and cap:
             cap.release()
             self.cap = None # Clear it after releasing
-            print("--- Marvix closed his eyes ---")
+            print("--- Kyrethys closed his eyes ---")
         elif state:
             import cv2
             self.cap = cv2.VideoCapture(0)
-            print("--- Marvix opened his eyes ---")
+            print("--- Kyrethys opened his eyes ---")
 
     def take_snapshot(self): # Omdøbt fra capture_snapshot så det matcher dit kald i backend
         with self.lock:

@@ -1,4 +1,4 @@
-# Marvix Backend Requirements - AMD GPU Optimized (DirectML)
+# Kyrethys Backend Requirements - AMD GPU Optimized (DirectML)
 # Note: Install system FFmpeg separately for Whisper to function.
 
 # Core Backend

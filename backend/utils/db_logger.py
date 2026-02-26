@@ -3,14 +3,14 @@ import os
 import json
 import cv2
 from datetime import datetime
-from plugins.vision import MarvixVision
+from plugins.vision import KyrethysVision
 # Her bruger vi den 'dybe' import som vi ved virker
 from mediapipe.python.solutions import face_mesh as mp_face_mesh
 
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'memory', 'marvix_logs.db')
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'memory', 'Kyrethys_logs.db')
 
 # Initialisér komponenter
-marvix_eyes = MarvixVision()
+Kyrethys_eyes = KyrethysVision()
 # Initialisér face_mesh med den korrekte sti
 face_mesh = mp_face_mesh.FaceMesh(
     static_image_mode=True, 
@@ -57,7 +57,7 @@ def extract_face_mesh(image_path):
 
 def log_interaction(user_message: str, assistant_response: str, emotion_state: dict):
     # 1. Fang snapshot
-    snapshot_filename = marvix_eyes.take_snapshot()
+    snapshot_filename = Kyrethys_eyes.take_snapshot()
     
     # 2. Udtræk koordinater
     coords_json = None

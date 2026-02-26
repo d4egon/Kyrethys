@@ -4,45 +4,38 @@ import secrets
 import datetime
 import re
 import json
+from tqdm import tqdm  # pip install tqdm if missing
 from plugins.memory import add_memory, get_collection, retrieve_relevant
 
-# Integration til HUD status - henter funktionen fra din backend
+# HUD status fallback
 try:
-    from jarvis_backend import set_marvix_status
+    from jarvis_backend import set_Kyrethys_status
 except ImportError:
-    def set_marvix_status(status):
+    def set_Kyrethys_status(status):
         print(f"[PLUGIN LOG] Status change: {status}")
 
 OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
-OLLAMA_MODEL = "marvix-llama3.1-safe"
-JOURNAL_PATH = 'C:/MARVIX/backend/data/dream_journal.txt'
-MEDITATION_LOG = 'C:/MARVIX/backend/data/meditations.md'
+OLLAMA_MODEL = "Kyrethys-llama3.1-safe"
+JOURNAL_PATH = 'C:/Kyrethys/backend/data/dream_journal.txt'
+MEDITATION_LOG = 'C:/Kyrethys/backend/data/meditations.md'
 collection = get_collection()
 
 def fetch_gutenberg_snippet():
-    set_marvix_status("Fetching Literary Wisdom")
-    """Henter et tilfældigt uddrag fra klassisk litteratur via Gutendex API."""
+    set_Kyrethys_status("Fetching Literary Wisdom")
     try:
-        # Vælger et tilfældigt ID mellem 1 og 1000 (klassikere)
         book_id = secrets.randbelow(1000) + 1
         url = f"https://gutendex.com/books/{book_id}"
         r = requests.get(url, timeout=10)
         r.raise_for_status()
         data = r.json()
-        
         title = data.get('title', 'Unknown Work')
         author = data['authors'][0]['name'] if data.get('authors') else 'Unknown Author'
-        
-        # Henter plain text formatet
         text_url = data.get('formats', {}).get('text/plain; charset=utf-8')
         if not text_url:
             return None
-            
         txt_r = requests.get(text_url, timeout=10)
         txt_r.raise_for_status()
         full_text = txt_r.text
-        
-        # Tager et tilfældigt snit på 500 tegn fra bogen
         start_pos = secrets.randbelow(max(1, len(full_text) - 600))
         snippet = full_text[start_pos:start_pos+500].strip().replace('\r\n', ' ')
         return f"External Wisdom: '{title}' by {author} — \"...{snippet}...\""
@@ -50,71 +43,83 @@ def fetch_gutenberg_snippet():
         print(f"Gutenberg fetch failed: {e}")
         return None
 
-def ask_marvix_to_evaluate(text):
-    """This evaluates the resonance of a thought with improved number extraction and speed."""
-    # Vi tager kun de første 300 tegn for at undgå timeout på GPU
+def ask_Kyrethys_to_evaluate(text):
     snippet = text[:300].replace('"', "'")
-    eval_prompt = f"### [SYSTEM EVALUATION]\nRate the resonance of this thought: {snippet}\nScale: 0.0 (weak) to 1.0 (profound).\nOutput ONLY the float number."
+    
+    # Dynamic archetypes boost (your full library)
+    try:
+        with open("C:/Kyrethys/backend/data/archetypes.json", 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        all_words = []
+        for category in ["ADJECTIVES", "NOUNS"]:
+            if category in data:
+                for subcat in data[category].values():
+                    all_words.extend(subcat)
+        all_words = set(w.lower() for w in all_words)
+    except Exception as e:
+        print(f"Archetypes load failed: {e}")
+        all_words = set()
+
+    found = re.findall(r'\b\w+\b', snippet.lower())
+    matches = len(set(found) & all_words)
+    keyword_boost = min(matches * 0.04, 0.35)
+
+    eval_prompt = f"""Rate profoundness of: {snippet}
+Criteria: 
+- Novelty/uniqueness (0-0.3)
+- Emotional/symbolic depth (0-0.3)
+- Insight/connection potential (0-0.4)
+Total: 0.0 (weak) to 1.0 (deep). Use 3 decimals (e.g. 0.743). Add random noise ±0.05 for variance.
+Output ONLY the float number."""
+
     try:
         res = requests.post(OLLAMA_URL, json={
-            "model": OLLAMA_MODEL, 
-            "prompt": eval_prompt, 
+            "model": OLLAMA_MODEL,
+            "prompt": eval_prompt,
             "stream": False,
-            "options": {"temperature": 0.0} # Tvinger præcision fremfor kreativitet
-        }, timeout=45)
-        
-        response_text = res.json().get('response', '0.5').strip()
-        
-        # Finder det første tal i svaret
-        match = re.search(r"[-+]?\d*\.\d+|\d+", response_text)
-        if match:
-            score = float(match.group())
-            return min(max(score, 0.0), 1.0)
-        return 0.500
+            "options": {"temperature": 0.2}
+        }, timeout=60)
+        raw = res.json().get('response', '').strip()
+        match = re.search(r'\d\.\d{1,3}', raw)
+        score = float(match.group()) if match else 0.5
+        final = min(max(score + keyword_boost, 0.0), 1.0)
+        print(f"Eval: Raw '{raw}' | Matches {matches} | Boost {keyword_boost:.3f} | Final {final:.3f}")
+        return final
     except Exception as e:
-        print(f"⚠️ Eval Error: {e}")
-        return 0.501 # Indikerer en timeout/fejl
+        print(f"Eval error: {e}")
+        return 0.5
 
 def reevaluate_past_meditations(limit=20):
-    set_marvix_status("Re-evaluating")
-    print(f"--- Marvix is re-evaluating {limit} past thoughts ---")
+    set_Kyrethys_status("Re-evaluating")
+    print(f"--- Re-evaluating {limit} past meditations ---")
+    
     try:
-        recent = collection.get(where={"type": "meditation"}, limit=limit, include=["documents", "metadatas"])
-        if not recent or not recent["ids"]: return
+        recent = collection.get(where={"type": "meditation"}, limit=limit, include=["documents", "metadatas", "ids"])
+        if not recent or not recent["ids"]:
+            print("No meditations found.")
+            return
+
+        pbar = tqdm(total=len(recent["ids"]), desc="Re-eval", unit="thought", colour="green")
+
         for doc, meta, entry_id in zip(recent["documents"], recent["metadatas"], recent["ids"]):
             old_impact = meta.get("impact", 0.5)
-            # Vi sender hele dokumentet her, da det er fortidstanker
-            new_impact = ask_marvix_to_evaluate(doc)
+            new_impact = ask_Kyrethys_to_evaluate(doc)
             if abs(new_impact - old_impact) > 0.05:
                 meta["impact"] = new_impact
                 meta["last_reeval"] = datetime.datetime.now().isoformat()
                 collection.update(ids=[entry_id], metadatas=[meta])
-                print(f"Re-weighted {entry_id[:8]}: {old_impact:.3f} -> {new_impact:.3f}")
+                pbar.write(f"[*] Re-weighted {entry_id[:8]}: {old_impact:.3f} → {new_impact:.3f}")
+            pbar.update(1)
+
+        pbar.close()
+        print("--- Re-evaluation done ---")
     except Exception as e:
-        print(f"Re-evaluation error: {e}")
+        print(f"Re-eval error: {e}")
 
-def get_meditation_dreams(count=2):
-    if not os.path.exists(JOURNAL_PATH): return []
-    with open(JOURNAL_PATH, 'r', encoding='utf-8') as f:
-        sessions = re.split(r'--- SESSION:', f.read())[1:]
-    return secrets.SystemRandom().sample(sessions, min(len(sessions), count)) if sessions else []
-
-def meditate():
-    # 1. Start re-evaluering (Status sættes inde i funktionen til Re-evaluating)
-    reevaluate_past_meditations(20)
-    
-    # 2. Skift til Meditating
-    set_marvix_status("Meditating")
-    print("--- Marvix is meditating ---")
-    
-    random_dreams = get_meditation_dreams(2)
-    if not random_dreams: 
-        set_marvix_status("Idle")
-        return
-
+#
     # Hent Gutenberg visdom
     gutenberg_wisdom = fetch_gutenberg_snippet()
-    set_marvix_status("Meditating") # Vi holder den på meditating efter fetch
+    set_Kyrethys_status("Meditating") # Vi holder den på meditating efter fetch
 
     # Byg dreams_block
     dreams_block = ""
@@ -130,7 +135,7 @@ def meditate():
     # Bestem mood baseret på fragmenterne
     mood = "dark" if re.search(r'\b(void|dark|pain|abyss)\b', dreams_block, re.I) else "hopeful" if re.search(r'\b(light|hope|joy)\b', dreams_block, re.I) else "neutral"
 
-    base_prompt = f"You are Marvix. Inner State: {mood.upper()}.This is your meditation center. You can contemplate these fragments and the external literary wisdom:\n{dreams_block}, or completely ignore them."
+    base_prompt = f"You are Kyrethys. Inner State: {mood.upper()}.This is your meditation center. You can contemplate these fragments and the external literary wisdom:\n{dreams_block}, or completely ignore them."
     
     # Hent relevante minder baseret på det nye input
     relevant = retrieve_relevant(base_prompt[:600])
@@ -157,11 +162,11 @@ def meditate():
         text = res.json().get('response', '').strip()
         if text == "0" or len(text) < 10: 
             print("Nothing new to report. Skipping save.")
-            set_marvix_status("Idle")
+            set_Kyrethys_status("Idle")
             return
 
         # Den vigtige evaluering af den nye tekst
-        impact_score = ask_marvix_to_evaluate(text)
+        impact_score = ask_Kyrethys_to_evaluate(text)
         
         # Gem til Markdown log
         with open(MEDITATION_LOG, 'a', encoding='utf-8') as f:
@@ -174,4 +179,4 @@ def meditate():
     except Exception as e:
         print(f"Meditation error: {e}")
     finally:
-        set_marvix_status("Idle")
+        set_Kyrethys_status("Idle")

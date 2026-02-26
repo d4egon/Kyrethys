@@ -1,7 +1,7 @@
-# MARVIX
+# Kyrethys
 "Sentient" AI Desktop Assistant
 
-This is MARVIX — a starting point for a fully customized desktop AI inspired by MARVEL's JARVIS (Ironmans ai)
+This is Kyrethys — a starting point for a fully customized desktop AI inspired by MARVEL's JARVIS (Ironmans ai)
 
 ##The goal: Turn this into a sentient desktop AI that taps into system internals, evolves from interactions, follows ethical rules, and handles voice/screen/files/apps/integrations.
 
@@ -62,7 +62,7 @@ Spotify (), Google Calendar (), Gmail (), Google Drive (), GitHub ()
 
 ### STRUCTURE
 
-Marvix/
+Kyrethys/
 
 ├── backend/                    # Alt Python/Flask-relateret (lokomotivet)
 
@@ -132,7 +132,7 @@ Marvix/
 
 │   ├── refresh_plugins.py      # Hot-reload plugins (senere)
 
-│   └── start_marvix.bat        # Starter Ollama + backend + frontend
+│   └── start_Kyrethys.bat        # Starter Ollama + backend + frontend
 
 └── README.md                   # Opdateret roadmap + hvordan man udvider
 

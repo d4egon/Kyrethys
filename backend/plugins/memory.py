@@ -5,8 +5,8 @@ from datetime import datetime
 import uuid
 import json
 
-CHROMA_PATH = "C:/MARVIX/backend/data/chroma_db"
-COLLECTION_NAME = "marvix_memories"
+CHROMA_PATH = "C:/Kyrethys/backend/data/chroma_db"
+COLLECTION_NAME = "Kyrethys_memories"
 OLLAMA_EMBED_URL = "http://127.0.0.1:11434/api/embeddings"
 
 # Persistent Chroma client
@@ -25,7 +25,7 @@ def get_collection():
 
 def ollama_embed(text):
     """Get embedding from Ollama with payload logging"""
-    payload = {"model": "marvix-llama3.1-safe", "prompt": text}
+    payload = {"model": "Kyrethys-llama3.1-safe", "prompt": text}
     
     print(f"\n--- [EMBEDDING REQUEST] ---")
     print(f"Payload: {json.dumps({'model': payload['model'], 'prompt': text[:100] + '...' if len(text) > 100 else text}, indent=2)}")

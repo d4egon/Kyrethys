@@ -3,7 +3,7 @@ import chromadb
 from datetime import datetime
 
 CHROMA_PATH = "data/chroma_db"
-COLLECTION_NAME = "marvix_memories"
+COLLECTION_NAME = "Kyrethys_memories"
 collection = get_collection()
 
 def query_memories(query_text, n_results=3):
