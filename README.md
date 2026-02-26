@@ -1,7 +1,7 @@
 # Kyrethys
 "Sentient" AI Desktop Assistant
 
-This is Kyrethys — a starting point for a fully customized desktop AI inspired by MARVEL's JARVIS (Ironmans ai)
+This is Kyrethys — a starting point for a fully customized desktop AI inspired by MARVEL's KYRETHYS (Ironmans ai)
 
 ##The goal: Turn this into a sentient desktop AI that taps into system internals, evolves from interactions, follows ethical rules, and handles voice/screen/files/apps/integrations.
 
@@ -9,7 +9,7 @@ This is Kyrethys — a starting point for a fully customized desktop AI inspired
 ## Functionality Roadmap
 
 ### Basic + Core Features
- Theme "Jarvis Blue"(done), Language "English"(done). Voice Control(almost done), Screen Analysis,  File System, App Launcher(almost done), Web Scraping, System Monitor.
+ Theme "Kyrethys Blue"(done), Language "English"(done). Voice Control(almost done), Screen Analysis,  File System, App Launcher(almost done), Web Scraping, System Monitor.
 
 ### Personality (DONE)
 Self-Adaptation, Core Traits: Humor, Formality, Empathy Proactiveness , Curiosity , Patience . Advanced Traits: Assertiveness , Creativity , Optimism, Cautiousness , Sociability , Analytical - all on a various scale depending on a.i. mood !
@@ -65,7 +65,7 @@ Kyrethys/
 
 ├── backend/                    # Alt Python/Flask-relateret (lokomotivet)
 
-│   ├── jarvis_backend.py       # Hoved Flask-app (starter server, loader plugins)
+│   ├── kyrethys_backend.py       # Hoved Flask-app (starter server, loader plugins)
 
 │   ├── plugins/                # Plugin-system (togvogne – hver feature sin egen fil)
 

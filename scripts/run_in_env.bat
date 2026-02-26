@@ -50,7 +50,7 @@ pip install -r requirements.txt --quiet --upgrade
 
 echo.
 echo 4. Starting backend (Flask)...
-start "Kyrethys - Backend" cmd /k "call %CONDA_PATH% base && conda activate Kyrethys-env && cd /d %Kyrethys_ROOT%\backend && title Kyrethys Backend && python jarvis_backend.py"
+start "Kyrethys - Backend" cmd /k "call %CONDA_PATH% base && conda activate Kyrethys-env && cd /d %Kyrethys_ROOT%\backend && title Kyrethys Backend && python kyrethys_backend.py"
 
 echo.
 echo 5. Waiting 10 seconds for backend...

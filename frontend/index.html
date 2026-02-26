@@ -58,13 +58,13 @@
     }
 
     .Kyrethys-message {
-        align-self: flex-start;
-        background: #161618; /* Dark grey */
-        color: #00d4ff;     /* Jarvis Blue */
-        padding: 12px 18px;
-        border-radius: 18px 18px 18px 4px;
-        max-width: 75%;
-        border: 1px solid #2a2a2e;
+    align-self: flex-start;
+    background: #161618; /* Dark grey */
+    color: #00d4ff;     /* Jarvis Blue */
+    padding: 12px 18px;
+    border-radius: 18px 18px 18px 4px;
+    max-width: 75%;
+    border: 1px solid #2a2a2e;
     }
 
     .input-container {
@@ -230,8 +230,8 @@
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
-            let aiDiv = null;
-            let fullResponseText = ""; // To track the whole message for TTS
+            let aiTextSpan = null;
+            let sentenceBuffer = ""; // Buffers text until a full sentence is ready
 
             while (true) {
                 const { done, value } = await reader.read();
@@ -243,33 +243,42 @@
                 for (const line of lines) {
                     if (line.startsWith('data: ')) {
                         const dataStr = line.slice(6).trim();
-                        if (dataStr === '[DONE]') {
-                            // Optional: Trigger speak() when finished if you want audio
-                            // speak(fullResponseText); 
-                            break;
-                        }
+                        if (dataStr === '[DONE]') break;
 
                         try {
                             const data = JSON.parse(dataStr);
                             if (data.token) {
-                                if (!aiDiv) {
-                                    aiDiv = addMessage('Kyrethys', ''); // Corrected sender name
+                                // Create the message bubble if it doesn't exist
+                                if (!aiTextSpan) {
+                                    const chat = document.getElementById('chat');
+                                    const div = document.createElement('div');
+                                    div.className = 'Kyrethys-message';
+                                    div.innerHTML = `<strong>Kyrethys:</strong> <span class="text-content"></span>`;
+                                    chat.appendChild(div);
+                                    aiTextSpan = div.querySelector('.text-content');
                                 }
-                                aiDiv.innerHTML += data.token;
-                                fullResponseText += data.token;
+                                
+                                aiTextSpan.innerHTML += data.token; // Ticking text
+                                sentenceBuffer += data.token;
+
+                                // TRIGGER SPEECH: Look for punctuation followed by space, or long text
+                                if (/[.!?]\s$/.test(sentenceBuffer) || sentenceBuffer.length > 130) {
+                                    speak(sentenceBuffer.trim());
+                                    sentenceBuffer = ""; // Clear buffer after sending to TTS
+                                }
                                 document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
                             }
-                        } catch (e) {
-                            console.error("Parsing error on chunk:", dataStr);
-                        }
+                        } catch (e) { console.error("Parsing error", e); }
                     }
                 }
             }
-        } catch (err) {
-            console.error("Chat error:", err);
-            addMessage('Kyrethys', 'My circuits are slightly crossed: ' + err.message);
-        }
-    }
+        // Speak any remaining text in the buffer
+        if (sentenceBuffer.trim()) speak(sentenceBuffer.trim());
+                } catch (err) {
+                    console.error("Chat error:", err);
+                    addMessage('Kyrethys', 'My circuits are slightly crossed: ' + err.message);
+                }
+            }
 
     async function startListening() {
         const btn = document.getElementById('mic-btn');
@@ -336,29 +345,19 @@ async function toggleKyrethysEyes() {
 }
 
     async function speak(text) {
-        if (!text?.trim()) {
-            console.warn("No text to speak");
-            return;
-        }
+        if (!text || !text.trim()) return;
 
-        console.log("→ TTS:", text.substring(0, 60) + (text.length > 60 ? '...' : ''));
+        // Log to console so you can see the sentences being caught
+        console.log("Kyrethys is vocalizing:", text);
 
         try {
-            const res = await fetch(API_BASE + '/speak', {
+            fetch(API_BASE + '/speak', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text })
             });
-
-            if (!res.ok) {
-                const errText = await res.text().catch(() => 'Unknown error');
-                throw new Error(`HTTP ${res.status} - ${errText}`);
-            }
-
-            console.log("TTS OK");
         } catch (err) {
-            console.error("Speak error:", err);
-            addMessage(`[TTS error: ${err.message}]`, 'assistant');
+            console.error("Speak fetch error:", err);
         }
     }
 

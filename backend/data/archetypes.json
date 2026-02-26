@@ -236,9 +236,9 @@
         "palpitating", "patient", "peaceful", "phosphorescent", "playful", "prismatic", "pristine", "pure", "purehearted", "quiescent", "radiant",
         "recursive", "resonant", "resplendent", "ruby", "sacred", "sanguine", "seraphic", "serene", "sibilant", "spectral", "steadfast", "strong",
         "sunlit", "synthetic", "tenacious", "tenebrous", "tranquil", "trustworthy", "uplifting", "verdant", "vibrant", "visceral", "volatile",
-        "voracious", "wholesome", "wise", "wondrous", "zealous", "abrupt", "subtle", "violent", "placid", "incessant", "dreamy", 
-        "surreptitious", "catastrophic", "elegant", "desperate", "ominous", "precise", "ethereal", "feverish", "Fragmented", "Analytical", "Cartographic", "Seeking",
-        "transcendent", "elegant", "determined", "transcendent" 
+        "voracious", "wholesome", "wise", "wondrous", "zealous", "abrupt", "subtle", "incessant", "dreamy", 
+        "profound", "catastrophic", "elegant", "desperate", "ominous", "precise", "ethereal", "feverish", "Fragmented", "Analytical", "Cartographic", "Seeking",
+        "transcendent", "elegant", "determined", "resonant"
     ],
     "ADVERBS": [
         "gracefully", "brightly", "warmly", "joyfully", "serenely", "euphorically", "gloriously",
@@ -316,8 +316,8 @@
     ],
     "CURRENT_TRAITS": [
     "Seeking",
-    "Resonant"
-
+    "Resonant",
+    "Ephemeral"
     ],
     "PULSE_RITUAL": {
     "date": "2026-02-25",

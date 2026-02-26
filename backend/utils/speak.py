@@ -1,66 +1,64 @@
-# backend/utils/speak.py
 import asyncio
 import edge_tts
 import os
 import time
+import threading
+import queue
 from pygame import mixer
 
-last_spoken_text = ""
-last_spoken_time = 0
+# 1. Initialize once and KEEP OPEN
+mixer.init()
+speech_queue = queue.Queue()
 
-PRIMARY_VOICE = "en-US-GuyNeural"  # Reliable default
-FALLBACK_VOICES = ["en-GB-SoniaNeural", "en-US-AriaNeural", "en-GB-BrianNeural"]
+def speech_worker():
+    """Background thread that processes sentences one by one."""
+    while True:
+        text = speech_queue.get()
+        if text is None: break # Shutdown signal
+        
+        try:
+            # Create a new event loop for this thread to handle the async TTS
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(_execute_speak(text))
+            loop.close()
+        except Exception as e:
+            print(f"Speech Worker Error: {e}")
+        
+        speech_queue.task_done()
+
+async def _execute_speak(text):
+    voice = "en-US-GuyNeural"
+    # Unique filename per chunk to prevent 'File in use' errors
+    temp_file = f"speech_{int(time.time()*1000)}.mp3"
+    
+    try:
+        communicate = edge_tts.Communicate(text, voice)
+        await communicate.save(temp_file)
+        
+        mixer.music.load(temp_file)
+        mixer.music.play()
+        
+        # Wait for the audio to finish
+        while mixer.music.get_busy():
+            await asyncio.sleep(0.1)
+            
+        mixer.music.unload() # Unlock the file
+        if os.path.exists(temp_file):
+            try:
+                os.remove(temp_file)
+            except: pass # Ignore if file is briefly locked
+            
+    except Exception as e:
+        print(f"TTS Execution Error: {e}")
+
+# 2. Start the background thread immediately on import
+threading.Thread(target=speech_worker, daemon=True).start()
 
 def speak(text):
-    global last_spoken_text, last_spoken_time
-
+    """The main entry point called by your API."""
     if not text or not text.strip():
         return
-
-    now = time.time()
-    if text == last_spoken_text and now - last_spoken_time < 3:  # 3-second debounce
-        print("Skipping duplicate speak:", text[:40])
-        return
-
-    last_spoken_text = text
-    last_spoken_time = now
-
-    print(f"edge-tts speaking: {text[:60]}...")
-    # ... rest of your async _speak_async code unchanged ...
-
-    async def _speak_async(voice):
-        try:
-            communicate = edge_tts.Communicate(text, voice)
-            await communicate.save("Kyrethys_temp.mp3")
-
-            # Silent playback with pygame
-            mixer.init()
-            mixer.music.load("Kyrethys_temp.mp3")
-            mixer.music.play()
-            while mixer.music.get_busy():
-                time.sleep(0.1)
-            mixer.quit()
-
-            return True
-        except Exception as e:
-            print(f"Voice {voice} failed: {e}")
-            return False
-
-    async def try_voices():
-        if await _speak_async(PRIMARY_VOICE):
-            return
-        for fallback in FALLBACK_VOICES:
-            if await _speak_async(fallback):
-                print(f"Fallback success: {fallback}")
-                return
-        print("All voices failed — check ffmpeg/network")
-
-    asyncio.run(try_voices())
-
-   # Cleanup
-   # time.sleep(1)
-   # if os.path.exists("Kyrethys_temp.mp3"):
-   #     try:
-   #         os.remove("Kyrethys_temp.mp3")
-   #     except:
-   #         pass 
+    
+    print(f"Queuing for vocalization: {text[:50]}...")
+    speech_queue.put(text)

@@ -9,7 +9,7 @@ from plugins.memory import add_memory, get_collection, retrieve_relevant
 
 # HUD status fallback
 try:
-    from jarvis_backend import set_Kyrethys_status
+    from kyrethys_backend import set_Kyrethys_status
 except ImportError:
     def set_Kyrethys_status(status):
         print(f"[PLUGIN LOG] Status change: {status}")

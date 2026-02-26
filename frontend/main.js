@@ -53,10 +53,10 @@ function createTray() {
 
 function startPythonBackend() {
     // Option 1: Absolute path (most reliable)
-    pythonProcess = spawn('python', ['C:/Kyrethys/backend/jarvis_backend.py']);
+    pythonProcess = spawn('python', ['C:/Kyrethys/backend/kyrethys_backend.py']);
     
     // Option 2: Relative from frontend folder
-    // pythonProcess = spawn('python', ['../backend/jarvis_backend.py']);
+    // pythonProcess = spawn('python', ['../backend/kyrethys_backend.py']);
 
     pythonProcess.stdout.on('data', (data) => {
         console.log(`Python: ${data}`);
